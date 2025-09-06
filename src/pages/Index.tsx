@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ImageUploader } from '@/components/ImageUploader';
+import { TextInput } from '@/components/TextInput';
 import { EraSlider } from '@/components/EraSlider';
 import { ImageComparison } from '@/components/ImageComparison';
 import { Button } from '@/components/ui/button';
@@ -9,73 +9,66 @@ import { toast } from 'sonner';
 import heroBackground from '@/assets/hero-background.jpg';
 
 const Index = () => {
-  const [originalImage, setOriginalImage] = useState<string>();
-  const [transformedImage, setTransformedImage] = useState<string>();
+  const [currentText, setCurrentText] = useState<string>();
+  const [generatedImages, setGeneratedImages] = useState<{ [era: number]: string }>({});
   const [currentEra, setCurrentEra] = useState<number>(2000);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
 
-  const handleImageUpload = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setOriginalImage(result);
-      setTransformedImage(undefined);
-      setError(undefined);
-      toast.success('Image uploaded successfully!');
-    };
-    reader.readAsDataURL(file);
-  }, []);
-
-  const handleRemoveImage = useCallback(() => {
-    setOriginalImage(undefined);
-    setTransformedImage(undefined);
+  const handleTextSubmit = useCallback(async (text: string) => {
+    setCurrentText(text);
+    setGeneratedImages({});
     setError(undefined);
-  }, []);
-
-  const handleEraChange = useCallback(async (era: number) => {
-    setCurrentEra(era);
     
-    if (!originalImage) {
-      return;
-    }
+    // Generate images for all eras
+    const eras = [1900, 1950, 2000, 2050];
+    
+    for (const era of eras) {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: text,
+            era: era,
+          }),
+        });
 
-    setIsLoading(true);
-    setError(undefined);
+        if (!response.ok) {
+          throw new Error(`Failed to generate image for ${era}: ${response.statusText}`);
+        }
 
-    try {
-      // Create a simple form data with the image
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imageUrl: originalImage,
-          era: era,
-        }),
-      });
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
-      if (!response.ok) {
-        throw new Error(`Failed to generate image: ${response.statusText}`);
+        setGeneratedImages(prev => ({
+          ...prev,
+          [era]: data.imageUrl
+        }));
+        
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : `Failed to generate image for ${era}`;
+        setError(errorMessage);
+        toast.error(errorMessage);
+        break; // Stop generating if one fails
       }
-
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setTransformedImage(data.imageUrl);
-      toast.success(`Image transformed to ${era}s style!`);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to transform image';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
-  }, [originalImage]);
+    
+    setIsLoading(false);
+    if (!error) {
+      toast.success('All era images generated successfully!');
+    }
+  }, []);
+
+  const handleEraChange = useCallback((era: number) => {
+    setCurrentEra(era);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -100,8 +93,8 @@ const Index = () => {
             </h2>
             
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Powered by Google Gemini 2.5 Flash, experience how your images would look 
-              throughout different eras - from vintage 1900s to futuristic 2050s.
+              Powered by Google Gemini 2.5 Flash, describe any scene and watch it come to life 
+              across different eras - from vintage 1900s to futuristic 2050s.
             </p>
 
             <div className="flex items-center justify-center gap-6 pt-8">
@@ -124,27 +117,27 @@ const Index = () => {
 
       {/* Main Application */}
       <div className="container mx-auto px-6 py-16 space-y-12">
-        {/* Upload Section */}
+        {/* Input Section */}
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <h3 className="text-3xl font-bold mb-4 flex items-center justify-center gap-3">
               <Zap className="w-8 h-8 text-primary" />
-              Start Your Time Journey
+              Describe Your Vision
             </h3>
             <p className="text-muted-foreground">
-              Upload any modern image and watch it transform across different time periods
+              Describe any scene, location, or setting and watch it materialize across different time periods
             </p>
           </div>
           
-          <ImageUploader
-            onImageUpload={handleImageUpload}
-            currentImage={originalImage}
-            onRemoveImage={handleRemoveImage}
+          <TextInput
+            onTextSubmit={handleTextSubmit}
+            currentText={currentText}
+            isLoading={isLoading}
           />
         </div>
 
         {/* Controls and Results */}
-        {originalImage && (
+        {currentText && (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             {/* Era Slider */}
             <div className="xl:col-span-1">
@@ -155,14 +148,14 @@ const Index = () => {
               />
             </div>
 
-            {/* Image Comparison */}
+            {/* Image Gallery */}
             <div className="xl:col-span-2">
               <ImageComparison
-                originalImage={originalImage}
-                transformedImage={transformedImage}
+                generatedImages={generatedImages}
                 currentEra={currentEra}
                 isLoading={isLoading}
                 error={error}
+                currentText={currentText}
               />
             </div>
           </div>
@@ -181,8 +174,8 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  AI-powered transformations that capture the authentic aesthetics, 
-                  lighting, and style of each historical period.
+                  AI-powered image generation that captures the authentic aesthetics, 
+                  lighting, and architectural styles of each historical period.
                 </p>
               </CardContent>
             </Card>
@@ -196,8 +189,8 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Maintains subject recognition and scene composition while 
-                  adapting visual style to match different time periods.
+                  Advanced text-to-image generation that maintains thematic consistency 
+                  while adapting visual elements to match different time periods.
                 </p>
               </CardContent>
             </Card>
@@ -212,7 +205,7 @@ const Index = () => {
               <CardContent>
                 <p className="text-sm text-muted-foreground">
                   Fast processing powered by Google Gemini 2.5 Flash for 
-                  real-time era transformations with stunning quality.
+                  instant era-specific image generation with stunning quality.
                 </p>
               </CardContent>
             </Card>

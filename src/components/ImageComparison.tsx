@@ -1,45 +1,51 @@
 import React, { useState } from 'react';
-import { Download, Loader2, AlertCircle } from 'lucide-react';
+import { Download, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ERAS } from './EraSlider';
 
 interface ImageComparisonProps {
-  originalImage?: string;
-  transformedImage?: string;
+  generatedImages?: { [era: number]: string };
   currentEra: number;
   isLoading?: boolean;
   error?: string;
+  currentText?: string;
 }
 
 export const ImageComparison: React.FC<ImageComparisonProps> = ({
-  originalImage,
-  transformedImage,
+  generatedImages = {},
   currentEra,
   isLoading = false,
   error,
+  currentText,
 }) => {
   const [imageComparison, setImageComparison] = useState(50); // Percentage for comparison slider
   const currentEraData = ERAS.find(era => era.year === currentEra) || ERAS[0];
+  
+  // Get current and comparison images
+  const currentImage = generatedImages[currentEra];
+  const comparisonEra = currentEra === 2000 ? 1950 : 2000; // Compare with modern or classic
+  const comparisonImage = generatedImages[comparisonEra];
+  const comparisonEraData = ERAS.find(era => era.year === comparisonEra) || ERAS[1];
 
   const handleDownload = () => {
-    if (transformedImage) {
+    if (currentImage) {
       const link = document.createElement('a');
-      link.href = transformedImage;
-      link.download = `era-blend-${currentEra}.jpg`;
+      link.href = currentImage;
+      link.download = `era-blend-${currentEra}-${Date.now()}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
   };
 
-  if (!originalImage) {
+  if (!currentText) {
     return (
       <Card className="h-96 flex items-center justify-center">
         <CardContent>
           <div className="text-center text-muted-foreground">
             <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Upload an image to see the transformation</p>
+            <p>Enter a description to generate images across eras</p>
           </div>
         </CardContent>
       </Card>
@@ -50,8 +56,8 @@ export const ImageComparison: React.FC<ImageComparisonProps> = ({
     <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Era Transformation</span>
-          {transformedImage && (
+          <span>Generated Images</span>
+          {currentImage && (
             <Button variant="outline" size="sm" onClick={handleDownload}>
               <Download className="w-4 h-4 mr-2" />
               Download
@@ -61,33 +67,41 @@ export const ImageComparison: React.FC<ImageComparisonProps> = ({
       </CardHeader>
       <CardContent className="p-0">
         <div className="relative">
-          {/* Comparison container */}
+          {/* Current era image */}
           <div className="relative h-96 overflow-hidden">
-            {/* Original image */}
-            <div className="absolute inset-0">
-              <img
-                src={originalImage}
-                alt="Original"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 text-white text-xs rounded">
-                Original (Modern)
+            {currentImage ? (
+              <>
+                <img
+                  src={currentImage}
+                  alt={`Generated for ${currentEra}`}
+                  className="w-full h-full object-cover"
+                />
+                <div className={`absolute bottom-2 left-2 px-2 py-1 bg-${currentEraData.color}/80 text-${currentEraData.color}-foreground text-xs rounded border border-${currentEraData.color}/50`}>
+                  {currentEraData.label}
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-full bg-muted/20 flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No image generated for {currentEraData.label}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Transformed image overlay */}
-            {transformedImage && (
+            {/* Comparison overlay for when we have multiple images */}
+            {comparisonImage && currentImage && (
               <div
                 className="absolute inset-0 overflow-hidden transition-all duration-300"
                 style={{ clipPath: `inset(0 ${100 - imageComparison}% 0 0)` }}
               >
                 <img
-                  src={transformedImage}
-                  alt={`Transformed to ${currentEra}`}
+                  src={comparisonImage}
+                  alt={`Generated for ${comparisonEra}`}
                   className="w-full h-full object-cover"
                 />
-                <div className={`absolute bottom-2 right-2 px-2 py-1 bg-${currentEraData.color}/80 text-${currentEraData.color}-foreground text-xs rounded border border-${currentEraData.color}/50`}>
-                  {currentEraData.label}
+                <div className={`absolute bottom-2 right-2 px-2 py-1 bg-${comparisonEraData.color}/80 text-${comparisonEraData.color}-foreground text-xs rounded border border-${comparisonEraData.color}/50`}>
+                  {comparisonEraData.label}
                 </div>
               </div>
             )}
@@ -97,7 +111,10 @@ export const ImageComparison: React.FC<ImageComparisonProps> = ({
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <div className="text-center text-white">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                  <p className="text-sm">Transforming to {currentEraData.label}...</p>
+                  <p className="text-sm">Generating {currentEraData.label} style...</p>
+                  {currentText && (
+                    <p className="text-xs mt-1 opacity-75">"{currentText.slice(0, 50)}..."</p>
+                  )}
                 </div>
               </div>
             )}
@@ -112,8 +129,8 @@ export const ImageComparison: React.FC<ImageComparisonProps> = ({
               </div>
             )}
 
-            {/* Comparison slider */}
-            {transformedImage && !isLoading && (
+            {/* Comparison slider - only show if we have images to compare */}
+            {comparisonImage && currentImage && !isLoading && (
               <div className="absolute inset-y-0 left-0 right-0 flex items-center pointer-events-none">
                 <div
                   className="w-0.5 bg-white shadow-lg pointer-events-auto cursor-ew-resize"
@@ -135,14 +152,20 @@ export const ImageComparison: React.FC<ImageComparisonProps> = ({
             )}
           </div>
 
-          {/* Timeline indicator */}
-          {transformedImage && (
+          {/* Generation info */}
+          {currentText && (
             <div className="p-4 bg-muted/30">
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>Original (2024)</span>
-                <span className={`text-${currentEraData.color}-foreground font-medium`}>
-                  Transformed ({currentEra})
-                </span>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">Generated from:</p>
+                <p className="text-sm font-medium">"{currentText}"</p>
+                {comparisonImage && currentImage && (
+                  <div className="flex justify-between items-center text-xs text-muted-foreground mt-2">
+                    <span>{comparisonEraData.label}</span>
+                    <span className={`text-${currentEraData.color}-foreground font-medium`}>
+                      {currentEraData.label}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
