@@ -57,6 +57,37 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Era-specific colors
+        vintage: {
+          DEFAULT: "hsl(var(--vintage))",
+          foreground: "hsl(var(--vintage-foreground))",
+        },
+        classic: {
+          DEFAULT: "hsl(var(--classic))",
+          foreground: "hsl(var(--classic-foreground))",
+        },
+        modern: {
+          DEFAULT: "hsl(var(--modern))",
+          foreground: "hsl(var(--modern-foreground))",
+        },
+        future: {
+          DEFAULT: "hsl(var(--future))",
+          foreground: "hsl(var(--future-foreground))",
+        },
+      },
+      backgroundImage: {
+        'gradient-timeline': 'var(--gradient-timeline)',
+        'gradient-hero': 'var(--gradient-hero)',
+        'gradient-card': 'var(--gradient-card)',
+      },
+      boxShadow: {
+        'glow': 'var(--shadow-glow)',
+        'temporal': 'var(--shadow-temporal)',
+        'inset': 'var(--shadow-inset)',
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       },
       borderRadius: {
         lg: "var(--radius)",

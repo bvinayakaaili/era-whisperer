@@ -2,41 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Era Blender Design System - Time-travel inspired aesthetics */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core temporal theme */
+    --background: 220 20% 7%;
+    --foreground: 210 40% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 20% 10%;
+    --card-foreground: 210 40% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 210 40% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Era-specific colors */
+    --vintage: 35 60% 45%;      /* 1900s - Sepia brown */
+    --vintage-foreground: 35 20% 85%;
+    
+    --classic: 200 25% 35%;     /* 1950s - Classic blue */
+    --classic-foreground: 200 15% 90%;
+    
+    --modern: 240 75% 60%;      /* 2000s - Digital blue */
+    --modern-foreground: 240 20% 95%;
+    
+    --future: 280 85% 65%;      /* 2050s - Neon purple */
+    --future-foreground: 280 15% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --primary: 260 75% 60%;
+    --primary-foreground: 260 15% 95%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --secondary: 220 25% 20%;
+    --secondary-foreground: 220 10% 85%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 220 20% 15%;
+    --muted-foreground: 220 10% 70%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 280 70% 55%;
+    --accent-foreground: 280 15% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 15% 95%;
 
-    --radius: 0.5rem;
+    --border: 220 25% 20%;
+    --input: 220 25% 18%;
+    --ring: 260 75% 60%;
+
+    --radius: 0.75rem;
+
+    /* Temporal gradients */
+    --gradient-timeline: linear-gradient(90deg, 
+      hsl(var(--vintage)) 0%, 
+      hsl(var(--classic)) 33%, 
+      hsl(var(--modern)) 66%, 
+      hsl(var(--future)) 100%);
+    
+    --gradient-hero: linear-gradient(135deg, 
+      hsl(220 30% 8%) 0%,
+      hsl(260 40% 12%) 50%,
+      hsl(280 50% 15%) 100%);
+
+    --gradient-card: linear-gradient(145deg,
+      hsl(220 25% 12%) 0%,
+      hsl(220 20% 8%) 100%);
+
+    /* Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Shadows */
+    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.3);
+    --shadow-temporal: 0 10px 40px -10px hsl(var(--primary) / 0.4);
+    --shadow-inset: inset 0 1px 0 hsl(220 30% 25%);
+
+    /* Borders */
+    --border-temporal: 1px solid hsl(var(--border));
+    --border-glow: 1px solid hsl(var(--primary) / 0.5);
 
     --sidebar-background: 0 0% 98%;
 
